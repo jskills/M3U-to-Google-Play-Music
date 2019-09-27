@@ -1,7 +1,7 @@
 # M3U-to-Google-Play-Music
 Convert local music playlist files from m3u format to become playlists in your Google Play Music library.
 
-This is for those of us that still have libraries of MP3 files and playlists in m3u format.  m3u is still a great way to manage playlists and is used by many media players (e.g. Winamp, iTunes).
+This is for those of us that still have libraries of MP3 files and playlists in m3u format.  The m3u playlist format is still a nice way to universally manage playlists and is used by many media players (e.g. Winamp, iTunes).
 
 This is quick and dirty script you can run regularly to:
   - scan a directory of local m3u playlists
