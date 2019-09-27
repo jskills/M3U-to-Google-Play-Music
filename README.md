@@ -9,3 +9,5 @@ This is quick and dirty script you can run regularly to:
   - compare and identfy what playlists are not in Google
   - grab MP3 tags from local songs and find the IDs of those songs in Google
   - use those IDs to recreate those playlists in Google Play Muaic
+
+You'll need to go through initial steps to authenticate with Google to ensure it sees your script as one of your authorized devices.  These steps are in the first part of the script.
