@@ -19,7 +19,7 @@ o_file = './oauth.txt'
 # the file containing the ID of one of your authorized devices for Google Play Music
 device_file = './dev_id.txt'
 
-# the directory where your .m3u playlists live
+# the directory where your .m3u playlists live - change this from mine for best results
 playlist_dir = '/Volumes/Data/DJ/music/'
 
 ###################
@@ -30,7 +30,12 @@ local_pls_file = [0] * 1000
 local_pls_name = [0] * 1000
 
 
-playlist_file =  sys.argv[1]
+if len(sys.argv) < 2:
+    print "Usage ./playlist.py [all|single_playlist_file_name]"
+    sys.exit()
+
+
+playlist_file = sys.argv[1]
 
 if playlist_file == 'all':
     ### find all local playlists
@@ -124,33 +129,35 @@ while (cnt <= len(need_to_read_file)) and (need_to_read_file[cnt] != 0 and os.pa
                 file_lookup = re.sub(r'\\', '/', file_lookup)
                 file_lookup = re.sub(r'\r', '', file_lookup)
                 file_lookup = re.sub(r'\n', '', file_lookup)
-		# my personal issue
-		file_lookup = re.sub(r'/Volumes/HD-PATU3/music/', '', file_lookup)
-               	# get all mp3 tag data
-		#print 'Getting MP3 tags for : ' + file_lookup
-		mp3 = []
-		try:
-               		mp3 = EasyID3(file_lookup)
-		except:
-			print 'Cannot extract mp3 tags from ' + file_lookup
+		        # my personal issue
+                file_lookup = re.sub(r'/Volumes/HD-PATU3/music/', '', file_lookup)
+                # get all mp3 tag data
+		        #print 'Getting MP3 tags for : ' + file_lookup
+                mp3 = []
+                try:
+                    mp3 = EasyID3(file_lookup)
+                except:
+                    print 'Cannot extract mp3 tags from ' + file_lookup
+                # to see all valid keys ...
                 #print EasyID3.valid_keys.keys()
-		check_title = ''
-		check_artist = ''
-		if 'title' in mp3 and 'artist' in mp3:
-                	check_title_list = mp3["title"]
-                	check_title = check_title_list.pop()
-			try :
-				check_tile = check_title.encode('ascii', 'ignore').decode('ascii')
-			except:
-				check_title = ''
-			if type(check_title) == 'unicode':
-				check_title = ''
-                	check_artist_list = mp3["artist"]
-                	check_artist = check_artist_list.pop()
-			try:
-				check_artist = check_artist.encode('ascii', 'ignore').decode('ascii')
-			except:
-				check_artist = ''
+                check_title = ''
+                check_artist = ''
+                if 'title' in mp3 and 'artist' in mp3:
+                    check_title_list = mp3["title"]
+                    check_title = check_title_list.pop()
+                    try:
+				        check_tile = check_title.encode('ascii', 'ignore').decode('ascii')
+                    except:
+				        check_title = ''
+                    if type(check_title) == 'unicode':
+                        check_title = ''
+                    # todo : Python3 for native unicode support
+                    check_artist_list = mp3["artist"]
+                    check_artist = check_artist_list.pop()
+                    try:
+                        check_artist = check_artist.encode('ascii', 'ignore').decode('ascii')
+                    except:
+                        check_artist = ''
                 # scan entire songDict by name to find song_id
                 sd_find = 0
                 for sd in songDict:
