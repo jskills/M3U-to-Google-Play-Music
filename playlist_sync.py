@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import re
 
 # API to interface with Google Play Music API
@@ -19,7 +20,7 @@ o_file = './oauth.txt'
 device_file = './dev_id.txt'
 
 # the directory where your .m3u playlists live
-playlist_dir = ''
+playlist_dir = '/Volumes/Data/DJ/music/'
 
 ###################
 
@@ -28,12 +29,21 @@ playlist_dir = ''
 local_pls_file = [0] * 1000
 local_pls_name = [0] * 1000
 
-i = 0
-for pl_file in os.listdir(playlist_dir):
-    if pl_file.endswith(".m3u"):
-        local_pls_name[i] = pl_file
-        local_pls_file[i] = os.path.join(playlist_dir, pl_file)
-        i += 1
+
+playlist_file =  sys.argv[1]
+
+if playlist_file == 'all':
+    ### find all local playlists
+    i = 0
+    for pl_file in os.listdir(playlist_dir):
+        if pl_file.endswith(".m3u"):
+            local_pls_name[i] = pl_file
+       	    local_pls_file[i] = os.path.join(playlist_dir, pl_file)
+            i += 1
+else:
+    local_pls_name[0] = playlist_file
+    local_pls_file[0] = os.path.join(playlist_dir, playlist_file)
+	
 
 ###################
 
@@ -76,7 +86,7 @@ need_to_read_file = [0] * 1000
 
 found_count = 0
 cnt = 0
-while (cnt < (len(local_pls_name)-1)) and (local_pls_name[cnt] != 0):
+while (cnt <= (len(local_pls_name))) and (local_pls_name[cnt] != 0):
     found = 0
     # replace underscores with spaces for title of playlist comparison
     # this is a personal convention for how playlist files are named - you may not need to do this
@@ -100,27 +110,47 @@ while (cnt < (len(local_pls_name)-1)) and (local_pls_name[cnt] != 0):
 
 ### find each song in each new playlist, lookup song_ids in Google, add them to list, create new playlist
 cnt = 0
-while (cnt < len(need_to_read_file)-1) and (need_to_read_file[cnt] != 0):
+while (cnt <= len(need_to_read_file)) and (need_to_read_file[cnt] != 0 and os.path.isfile(need_to_read_file[cnt])):
     pl_songs = []
     # read local playlist
     with open(need_to_read_file[cnt]) as f:
         line = f.readline()
         while line:
             # grab each relevant line
-            if not (line.startswith('#')):
+            if not (line.startswith('#') or ('.mp4' in line or '.m4a' in line)):
                 # extract title from MP3 tag
                 file_lookup = playlist_dir + line
                 # convert m3u file naming conventions to standard Unix
                 file_lookup = re.sub(r'\\', '/', file_lookup)
                 file_lookup = re.sub(r'\r', '', file_lookup)
                 file_lookup = re.sub(r'\n', '', file_lookup)
-                # get all mp3 tag data
-                mp3 = EasyID3(file_lookup)
+		# my personal issue
+		file_lookup = re.sub(r'/Volumes/HD-PATU3/music/', '', file_lookup)
+               	# get all mp3 tag data
+		#print 'Getting MP3 tags for : ' + file_lookup
+		mp3 = []
+		try:
+               		mp3 = EasyID3(file_lookup)
+		except:
+			print 'Cannot extract mp3 tags from ' + file_lookup
                 #print EasyID3.valid_keys.keys()
-                check_title_list = mp3["title"]
-                check_title = check_title_list.pop()
-                check_artist_list = mp3["artist"]
-                check_artist = check_artist_list.pop()
+		check_title = ''
+		check_artist = ''
+		if 'title' in mp3 and 'artist' in mp3:
+                	check_title_list = mp3["title"]
+                	check_title = check_title_list.pop()
+			try :
+				check_tile = check_title.encode('ascii', 'ignore').decode('ascii')
+			except:
+				check_title = ''
+			if type(check_title) == 'unicode':
+				check_title = ''
+                	check_artist_list = mp3["artist"]
+                	check_artist = check_artist_list.pop()
+			try:
+				check_artist = check_artist.encode('ascii', 'ignore').decode('ascii')
+			except:
+				check_artist = ''
                 # scan entire songDict by name to find song_id
                 sd_find = 0
                 for sd in songDict:
@@ -140,11 +170,15 @@ while (cnt < len(need_to_read_file)-1) and (need_to_read_file[cnt] != 0):
     # run through list of songs and add each song_id
     song_cnt = 0
     while(song_cnt < len(pl_songs)-1):
-        mc.add_songs_to_playlist(playlist_id, str(pl_songs[song_cnt]))
-        song_cnt += 1
+	try:
+        	mc.add_songs_to_playlist(playlist_id, str(pl_songs[song_cnt]))
+        	song_cnt += 1
+	except:
+		next
     print str(song_cnt) + " songs added ..."
 
     cnt += 1
+
 
 print str(cnt) + " new playlists added ..."
 
