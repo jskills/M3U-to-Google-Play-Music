@@ -11,3 +11,9 @@ This is quick and dirty script you can run regularly to:
   - use those IDs to recreate those playlists in Google Play Music
 
 You'll need to go through initial steps to authenticate with Google to ensure it sees your script as one of your authorized devices.  These steps are in the first part of the script.
+
+TO DO:
+    - Python3 upgrade for native unicode support
+    - ability to prompt user for Y/N as to whether to import each playlist in "all" mode
+    - functionality to examine existing Google playlists and update them if changes have been made to local m3u versions
+    - added comparison criteria for mp3 key "album" to further ensure we're looking up the right version of the song for a given artist
