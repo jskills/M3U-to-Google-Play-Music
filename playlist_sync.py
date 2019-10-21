@@ -21,11 +21,11 @@ device_file = './dev_id.txt'
 
 # the directory where your .m3u playlists live - change this from mine for best results
 playlist_dir = '/Volumes/Data/DJ/music/'
+playlist_dir = '/Users/jmortko/Music/music/'
 
 ###################
 
 
-### find all local playlists
 local_pls_file = [0] * 1000
 local_pls_name = [0] * 1000
 
@@ -48,6 +48,10 @@ if playlist_file == 'all':
 else:
     local_pls_name[0] = playlist_file
     local_pls_file[0] = os.path.join(playlist_dir, playlist_file)
+    if not os.path.exists(local_pls_file[0]):
+        print str(local_pls_file[0]) + " does not exist"
+        sys.exit()
+        
 	
 
 ###################
@@ -127,12 +131,13 @@ while (cnt <= len(need_to_read_file)) and (need_to_read_file[cnt] != 0 and os.pa
                 file_lookup = playlist_dir + line
                 # convert m3u file naming conventions to standard Unix
                 file_lookup = re.sub(r'\\', '/', file_lookup)
+                # remove other not needed characters
                 file_lookup = re.sub(r'\r', '', file_lookup)
                 file_lookup = re.sub(r'\n', '', file_lookup)
-		        # my personal issue
+		        # my personal file path for regex'ing
                 file_lookup = re.sub(r'/Volumes/HD-PATU3/music/', '', file_lookup)
                 # get all mp3 tag data
-		        #print 'Getting MP3 tags for : ' + file_lookup
+                print 'Getting MP3 tags for : ' + file_lookup
                 mp3 = []
                 try:
                     mp3 = EasyID3(file_lookup)
@@ -142,31 +147,47 @@ while (cnt <= len(need_to_read_file)) and (need_to_read_file[cnt] != 0 and os.pa
                 #print EasyID3.valid_keys.keys()
                 check_title = ''
                 check_artist = ''
+                check_album = ''
+                # todo : Python3 for native unicode support
                 if 'title' in mp3 and 'artist' in mp3:
                     check_title_list = mp3["title"]
                     check_title = check_title_list.pop()
                     try:
-				        check_tile = check_title.encode('ascii', 'ignore').decode('ascii')
+				        check_title = check_title.encode('ascii', 'ignore').decode('ascii')
                     except:
 				        check_title = ''
                     if type(check_title) == 'unicode':
                         check_title = ''
-                    # todo : Python3 for native unicode support
                     check_artist_list = mp3["artist"]
                     check_artist = check_artist_list.pop()
                     try:
                         check_artist = check_artist.encode('ascii', 'ignore').decode('ascii')
                     except:
                         check_artist = ''
+                    if 'album' in mp3:
+                        check_album_list = mp3["album"]
+                        check_album = check_album_list.pop()
+                        try:
+                            check_album = check_album.encode('ascii', 'ignore').decode('ascii')
+                        except:
+                            check_album = ''
+                    
                 # scan entire songDict by name to find song_id
                 sd_find = 0
                 for sd in songDict:
                     if sd['title'] == check_title and sd['artist'] == check_artist:
-                        # we assume if the title and artist match, that's the song we're looking for
-                        # if this is too general adding "album" as an additional condition for match makes sense
-                        pl_songs.append(sd["id"])
-                        sd_find = 1
-                        break
+                        if check_album:
+                            #print "comparing " + str(sd['album']) + " to find " + str(check_album)
+                            if sd['album'] == check_album:
+                                # try to use album match
+                                pl_songs.append(sd["id"])
+                                sd_find = 1
+                                break
+                        else:
+                            # we assume if the title and artist match, that's the song we're looking for
+                            pl_songs.append(sd["id"])
+                            sd_find = 1
+                            break
                 if not sd_find:
                     print "Could not find " + check_title + " by " + check_artist
             line = f.readline()
@@ -176,7 +197,7 @@ while (cnt <= len(need_to_read_file)) and (need_to_read_file[cnt] != 0 and os.pa
     playlist_id = mc.create_playlist(str(need_to_create_name[cnt]))
     # run through list of songs and add each song_id
     song_cnt = 0
-    while(song_cnt < len(pl_songs)-1):
+    while(song_cnt < len(pl_songs)):
 	try:
         	mc.add_songs_to_playlist(playlist_id, str(pl_songs[song_cnt]))
         	song_cnt += 1
