@@ -20,7 +20,9 @@ o_file = './oauth.txt'
 device_file = './dev_id.txt'
 
 # the directory where your .m3u playlists live - change this from mine for best results
+# home laptop
 playlist_dir = '/Volumes/Data/DJ/music/'
+# work laptop
 playlist_dir = '/Users/jmortko/Music/music/'
 
 ###################
