@@ -4,6 +4,8 @@ Convert local music playlist files from m3u format to become playlists in your G
 
 ----------------------------------------------------------------------------------------------------
 
+![deprecation](gpm-to-ytm.PNG)
+
 ## This repo has been deprecated along with Google Play Music.
 #### If you have migrated your library over to Youtube Music and are looking for this, check out the newly written 
 
